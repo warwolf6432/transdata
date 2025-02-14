@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
+
+
 export default function Home() {
   const [cvs, setCvs] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchType, setSearchType] = useState("documento"); // "documento" o "nombre"
+  const [searchType, setSearchType] = useState("documento");
+  const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
     documentoIdentidad: "",
     nombreEmpleado: "",
@@ -36,7 +39,6 @@ export default function Home() {
     fetchCVs();
   }, []);
 
-  // Obtener todos los CVs
   const fetchCVs = async () => {
     try {
       const response = await axios.get("http://localhost:5000/cvs");
@@ -46,19 +48,18 @@ export default function Home() {
     }
   };
 
-  // Buscar CV por documento o nombre
   const handleSearch = async () => {
     if (!searchQuery) {
       alert("Ingrese un término de búsqueda");
       return;
     }
-  
+
     try {
       const url =
         searchType === "documento"
           ? `http://localhost:5000/cvs/documento/${searchQuery}`
           : `http://localhost:5000/cvs/nombre/${searchQuery}`;
-  
+
       const response = await axios.get(url);
       setCvs(Array.isArray(response.data) ? response.data : [response.data]);
     } catch (error) {
@@ -67,72 +68,50 @@ export default function Home() {
       setCvs([]);
     }
   };
-  
 
-  // Restaurar la lista completa
   const handleShowAll = () => {
     fetchCVs();
-    setSearchQuery(""); // Limpiar el campo de búsqueda
+    setSearchQuery("");
   };
 
-  // Manejar cambios en el formulario
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Agregar o editar un CV
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      if (editingId) {
-        await axios.put(`http://localhost:5000/cvs/${editingId}`, formData);
-        setEditingId(null);
-      } else {
-        const response = await axios.post("http://localhost:5000/cvs", formData);
-        setCvs([...cvs, response.data]);
-      }
-
-      // Limpiar formulario
-      setFormData({
-        documentoIdentidad: "",
-        nombreEmpleado: "",
-        fechaNacimiento: "",
-        edad: "",
-        contacto: "",
-        enfermedadesReportadas: "",
-        direccion: "",
-        telefono: "",
-        celular: "",
-        cargo: "",
-        salario: "",
-        fechaIngreso: "",
-        tiempoEmpresa: "",
-        nivelAcademico: "",
-        fechaLlamadoAtencion: "",
-        accidentalidad: "",
-        fechaAccidente: "",
-        ARL: "",
-        EPS: "",
-        fondoPension: "",
-        cajaCompensacion: "",
-        fechaSuspension: "",
-        fechaAusentismo: "",
-      });
-
-      fetchCVs();
-    } catch (error) {
-      console.error("Error agregando o editando CV:", error);
-    }
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
   };
 
-  // Editar CV
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const data = new FormData();
+  
+    Object.keys(formData).forEach((key) => {
+      data.append(key, formData[key]);
+    });
+  
+    if (selectedFile) {
+      data.append("foto", selectedFile);
+    }
+  
+    try {
+      const response = await axios.post("http://localhost:5000/cvs", data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+  
+      console.log("✅ CV agregado:", response.data);
+    } catch (error) {
+      console.error("❌ Error al agregar CV:", error.response?.data || error);
+    }
+  };
+  
+  
+
   const handleEdit = (cv) => {
     setFormData(cv);
     setEditingId(cv._id);
   };
 
-  // Eliminar CV
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:5000/cvs/${id}`);
@@ -143,7 +122,7 @@ export default function Home() {
   };
 
   return (
-    <div>
+    <div style={{ padding: "20px" }}>
       <h1>Gestión de Hojas de Vida</h1>
 
       {/* Buscador */}
@@ -166,7 +145,7 @@ export default function Home() {
       </div>
 
       {/* Formulario para agregar/editar CVs */}
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} style={{ marginTop: "20px" }}>
         {Object.keys(formData).map((key) => (
           <div key={key}>
             <label>{key.replace(/([A-Z])/g, " $1").toUpperCase()}</label>
@@ -179,6 +158,13 @@ export default function Home() {
             />
           </div>
         ))}
+
+        {/* Campo para subir foto */}
+        <div>
+          <label>Subir Foto</label>
+          <input type="file" onChange={handleFileChange} />
+        </div>
+
         <button type="submit">{editingId ? "Actualizar" : "Agregar"}</button>
       </form>
 
@@ -197,6 +183,26 @@ export default function Home() {
                   </p>
                 )
             )}
+            
+            {/* Botón para descargar la foto */}
+            {cv.foto && (
+              <a
+                href={`http://localhost:5000${cv.foto}`}
+                download
+                style={{
+                  display: "inline-block",
+                  marginTop: "10px",
+                  padding: "5px 10px",
+                  backgroundColor: "green",
+                  color: "white",
+                  textDecoration: "none",
+                  borderRadius: "5px",
+                }}
+              >
+                Ver Foto 
+              </a>
+            )}
+
             <button onClick={() => handleEdit(cv)}>Editar</button>
             <button onClick={() => handleDelete(cv._id)} style={{ marginLeft: "10px", backgroundColor: "red", color: "white" }}>
               Eliminar
@@ -207,4 +213,5 @@ export default function Home() {
     </div>
   );
 }
+
 

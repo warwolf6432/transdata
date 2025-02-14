@@ -9,7 +9,8 @@ dotenv.config();
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Para datos de formularios
+app.use(express.json()); // Para datos en JSON
 app.use("/uploads", express.static("uploads")); // Servir imágenes
 
 // Conexión a MongoDB
@@ -57,16 +58,48 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// Servir archivos estáticos desde la carpeta 'uploads'
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// Ruta para descargar imágenes
+app.get("/download/:filename", (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, "uploads", filename);
+  res.download(filePath, (err) => {
+    if (err) {
+      console.error("Error al descargar el archivo:", err);
+      res.status(500).send("Error al descargar el archivo");
+    }
+  });
+});
+
 // Crear un nuevo CV
 app.post("/cvs", upload.single("foto"), async (req, res) => {
   try {
-    const newCV = new CV({ ...req.body, foto: req.file ? `/uploads/${req.file.filename}` : "" });
+    console.log("📩 Datos recibidos:", req.body);
+    console.log("📷 Archivo recibido:", req.file);
+
+    // Verificar si el documento ya existe
+    const existeCV = await CV.findOne({ documentoIdentidad: req.body.documentoIdentidad });
+    if (existeCV) {
+      return res.status(400).json({ message: "El documento de identidad ya está registrado" });
+    }
+
+    const newCV = new CV({
+      ...req.body,
+      foto: req.file ? `/uploads/${req.file.filename}` : "",
+    });
+
     await newCV.save();
     res.status(201).json(newCV);
   } catch (error) {
+    console.error("❌ Error al guardar el CV:", error);
     res.status(400).json({ message: "Error al guardar el CV", error });
   }
 });
+
+
+
 
 // Obtener todos los CVs
 app.get("/cvs", async (req, res) => {
@@ -100,16 +133,23 @@ app.get("/cvs/nombre/:nombre", async (req, res) => {
   }
 });
 
-// Actualizar un CV
-app.put("/cvs/:id", async (req, res) => {
+app.put("/cvs/:id", upload.single("foto"), async (req, res) => {
   try {
-    const updatedCV = await CV.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedCV) return res.status(404).json({ message: "CV no encontrado" });
+    const { id } = req.params;
+    const updateData = req.body;
+
+    // Si se sube una nueva foto, la añadimos a los datos a actualizar
+    if (req.file) {
+      updateData.foto = `/uploads/${req.file.filename}`;
+    }
+
+    const updatedCV = await CV.findByIdAndUpdate(id, updateData, { new: true });
     res.json(updatedCV);
   } catch (error) {
-    res.status(400).json({ message: "Error al actualizar el CV" });
+    res.status(500).json({ error: "Error actualizando el CV" });
   }
 });
+
 
 // Eliminar un CV
 app.delete("/cvs/:id", async (req, res) => {
