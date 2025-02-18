@@ -7,7 +7,12 @@ export default function Home() {
   const [cvs, setCvs] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchType, setSearchType] = useState("documento");
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFoto, setSelectedFoto] = useState(null);
+  const [selectedAccidentalidad, setSelectedAccidentalidad] = useState(null);
+  const [selectedHojaDeVida, setSelectedHojaDeVida] = useState(null);
+  const [selectedAusentismo, setSelectedAusentismo] = useState(null);
+  const [selectedSuspension, setSelectedSuspension] = useState(null);
+  const [selectedOtros, setSelectedOtros] = useState(null);
   const [formData, setFormData] = useState({
     documentoIdentidad: "",
     nombreEmpleado: "",
@@ -24,7 +29,7 @@ export default function Home() {
     tiempoEmpresa: "",
     nivelAcademico: "",
     fechaLlamadoAtencion: "",
-    accidentalidad: "",
+    Vaccidentalidad: "",
     fechaAccidente: "",
     ARL: "",
     EPS: "",
@@ -78,32 +83,75 @@ export default function Home() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
+  const handleFileChange = (e, setFile) => {
+    setFile(e.target.files[0]);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = new FormData();
-  
+
+    // Append all form data (text inputs)
     Object.keys(formData).forEach((key) => {
-      data.append(key, formData[key]);
+        data.append(key, formData[key]);
     });
-  
-    if (selectedFile) {
-      data.append("foto", selectedFile);
+
+    // Append files, handling each one individually
+    if (selectedFoto) {
+        data.append("foto", selectedFoto);
     }
-  
+    if (selectedAccidentalidad) {
+        data.append("accidentalidad", selectedAccidentalidad);
+    }
+    if (selectedHojaDeVida) {
+        data.append("hojaDeVida", selectedHojaDeVida);
+    }
+    if (selectedAusentismo) {
+        data.append("ausentismo", selectedAusentismo);
+    }
+    if (selectedSuspension) {
+      data.append("suspension", selectedSuspension);
+    }
+    if (selectedOtros) {
+        data.append("otros", selectedOtros);
+    }
+
+    console.log("FormData:", data);
     try {
-      const response = await axios.post("http://localhost:5000/cvs", data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-  
-      console.log("✅ CV agregado:", response.data);
+        let response;
+        if (editingId) {
+            response = await axios.put(`http://localhost:5000/cvs/${editingId}`, data, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            console.log("✅ CV actualizado:", response.data);
+        } else {
+            response = await axios.post("http://localhost:5000/cvs", data, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            console.log("✅ CV agregado:", response.data);
+        }
+
+        fetchCVs(); // Refresh the CV list
+        setFormData({  // Clear form data
+            documentoIdentidad: "", nombreEmpleado: "", fechaNacimiento: "", edad: "",
+            contacto: "", enfermedadesReportadas: "", direccion: "", telefono: "", celular: "",
+            cargo: "", salario: "", fechaIngreso: "", tiempoEmpresa: "", nivelAcademico: "",
+            fechaLlamadoAtencion: "", accidentalidad: "", fechaAccidente: "", ARL: "", EPS: "",
+            fondoPension: "", cajaCompensacion: "", fechaSuspension: "", fechaAusentismo: "",
+        });
+        setEditingId(null);       // Reset editing ID
+        setSelectedFoto(null);   // Reset selected files
+        setSelectedAccidentalidad(null);
+        setSelectedHojaDeVida(null);
+        setSelectedAusentismo(null);
+        setSelectedSuspension(null)
+        setSelectedOtros(null);
+
     } catch (error) {
-      console.error("❌ Error al agregar CV:", error.response?.data || error);
+        console.error("❌ Error al agregar/actualizar CV:", error.response?.data || error);
+        alert("Error al agregar/actualizar CV: " + (error.response?.data?.message || ""));
     }
-  };
+};
   
   
 
@@ -161,9 +209,59 @@ export default function Home() {
 
         {/* Campo para subir foto */}
         <div>
-          <label>Subir Foto</label>
-          <input type="file" onChange={handleFileChange} />
+                    <label>Subir Foto</label>
+                    <input type="file" name="foto" onChange={(e) => handleFileChange(e, setSelectedFoto)} />
+                    {selectedFoto && (
+                        <div>
+                            <img src={URL.createObjectURL(selectedFoto)} alt="Foto Preview" style={{ maxWidth: '200px' }} />
+                        </div>
+                    )}
+                </div>
+                <div>
+                    <label>VAccidentalidad</label>
+                    <input type="file" name="Vaccidentalidad" onChange={(e) => handleFileChange(e, setSelectedAccidentalidad)} />
+                    {selectedAccidentalidad && (
+                        <div>
+                            <p>File selected</p> {/* Or a more informative preview */}
+                        </div>
+                    )}
+                </div>
+                <div>
+                    <label>Hoja de vida</label>
+                    <input type="file" name="hojaDeVida" onChange={(e) => handleFileChange(e, setSelectedHojaDeVida)} />
+                    {selectedHojaDeVida && (
+                        <div>
+                            <p>File selected</p>
+                        </div>
+                    )}
+                </div>
+                <div>
+                    <label>Ausentismo</label>
+                    <input type="file" name="ausentismo" onChange={(e) => handleFileChange(e, setSelectedAusentismo)} />
+                    {selectedAusentismo && (
+                        <div>
+                            <p>File selected</p>
+                        </div>
+                    )}
+                </div>
+<div>
+    <label>Suspensión:</label>
+    <input type="file" name="suspension" onChange={(e) => handleFileChange(e, setSelectedSuspension)} />
+    {selectedSuspension && (
+        <div>
+            <p>File selected</p>
         </div>
+    )}
+</div>
+                <div>
+                    <label>Otros</label>
+                    <input type="file" name="otros" onChange={(e) => handleFileChange(e, setSelectedOtros)} />
+                    {selectedOtros && (
+                        <div>
+                           <p>File selected</p>
+                        </div>
+                    )}
+                </div>
 
         <button type="submit">{editingId ? "Actualizar" : "Agregar"}</button>
       </form>
@@ -200,6 +298,91 @@ export default function Home() {
                 }}
               >
                 Ver Foto 
+              </a>
+            )}
+            {cv.accidentalidad && (
+              <a
+                href={`http://localhost:5000${cv.accidentalidad}`}
+                download
+                style={{
+                  display: "inline-block",
+                  marginTop: "10px",
+                  padding: "5px 10px",
+                  backgroundColor: "green",
+                  color: "white",
+                  textDecoration: "none",
+                  borderRadius: "5px",
+                }}
+              >
+                Ver accidentalidad
+              </a>
+            )}
+            {cv.hojaDeVida && (
+              <a
+                href={`http://localhost:5000${cv.hojaDeVida}`}
+                download
+                style={{
+                  display: "inline-block",
+                  marginTop: "10px",
+                  padding: "5px 10px",
+                  backgroundColor: "green",
+                  color: "white",
+                  textDecoration: "none",
+                  borderRadius: "5px",
+                }}
+              >
+                Ver hojaDeVida
+              </a>
+            )}
+            {cv.ausentismo && (
+              <a
+                href={`http://localhost:5000${cv.ausentismo}`}
+                download
+                style={{
+                  display: "inline-block",
+                  marginTop: "10px",
+                  padding: "5px 10px",
+                  backgroundColor: "green",
+                  color: "white",
+                  textDecoration: "none",
+                  borderRadius: "5px",
+                }}
+              >
+                Ver Ausentismo
+              </a>
+            )}
+             {cv.suspension && (
+              <a
+                href={`http://localhost:5000${cv.otros}`}
+                download
+                style={{
+                  display: "inline-block",
+                  marginTop: "10px",
+                  padding: "5px 10px",
+                  backgroundColor: "green",
+                  color: "white",
+                  textDecoration: "none",
+                  borderRadius: "5px",
+                }}
+              >
+                Suspension
+              </a>
+            )}
+                        {cv.otros && (
+              <a
+                href={`http://localhost:5000${cv.otros}`}
+                download
+                style={{
+                  display: "inline-block",
+                  marginTop: "10px",
+                  padding: "5px 10px",
+                  backgroundColor: "green",
+                  color: "white",
+                  textDecoration: "none",
+                  borderRadius: "5px",
+                }}
+              >
+                Otros
               </a>
             )}
 

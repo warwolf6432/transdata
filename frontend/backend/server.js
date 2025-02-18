@@ -36,7 +36,7 @@ const cvSchema = new mongoose.Schema({
   tiempoEmpresa: { type: String, required: true },
   nivelAcademico: { type: String, required: true },
   fechaLlamadoAtencion: { type: String },
-  accidentalidad: { type: String },
+  vaccidentalidad: { type: String },
   fechaAccidente: { type: String },
   ARL: { type: String },
   EPS: { type: String },
@@ -44,7 +44,12 @@ const cvSchema = new mongoose.Schema({
   cajaCompensacion: { type: String },
   fechaSuspension: { type: String },
   fechaAusentismo: { type: String },
-  foto: { type: String }, // Campo para la foto
+  foto: { type: String },
+  accidentalidad: { type: String },
+  hojaDeVida: { type: String },
+  ausentismo: { type: String },
+  suspension: { type: String },
+  otros: { type: String }, // Campo para la foto
 });
 
 const CV = mongoose.model("CV", cvSchema);
@@ -73,28 +78,41 @@ app.get("/download/:filename", (req, res) => {
   });
 });
 
-// Crear un nuevo CV
-app.post("/cvs", upload.single("foto"), async (req, res) => {
+app.post("/cvs", upload.fields([
+  { name: 'foto', maxCount: 1 },
+  { name: 'accidentalidad', maxCount: 1 },
+  { name: 'hojaDeVida', maxCount: 1 },
+  { name: 'ausentismo', maxCount: 1 },
+  { name: 'suspension', maxCount: 1 },
+  { name: 'otros', maxCount: 1 }
+]), async (req, res) => {
+      console.log("req.body:", req.body);
+    console.log("req.files:", req.files);
   try {
-    console.log("📩 Datos recibidos:", req.body);
-    console.log("📷 Archivo recibido:", req.file);
+      console.log(" Datos recibidos:", req.body);
+      console.log(" Archivos recibidos:", req.files); // Ahora req.files contendrá un objeto con los archivos
 
-    // Verificar si el documento ya existe
-    const existeCV = await CV.findOne({ documentoIdentidad: req.body.documentoIdentidad });
-    if (existeCV) {
-      return res.status(400).json({ message: "El documento de identidad ya está registrado" });
-    }
+      // Verificar si el documento ya existe (igual que antes)
+      const existeCV = await CV.findOne({ documentoIdentidad: req.body.documentoIdentidad });
+      if (existeCV) {
+          return res.status(400).json({ message: "El documento de identidad ya está registrado" });
+      }
 
-    const newCV = new CV({
-      ...req.body,
-      foto: req.file ? `/uploads/${req.file.filename}` : "",
-    });
+      const newCV = new CV({
+          ...req.body,
+          foto: req.files['foto'] ? `/uploads/${req.files['foto'][0].filename}` : "",
+          accidentalidad: req.files['accidentalidad'] ? `/uploads/${req.files['accidentalidad'][0].filename}` : "",
+          hojaDeVida: req.files['hojaDeVida'] ? `/uploads/${req.files['hojaDeVida'][0].filename}` : "",
+          ausentismo: req.files['ausentismo'] ? `/uploads/${req.files['ausentismo'][0].filename}` : "",
+          suspension: req.files['suspension'] ? `/uploads/${req.files['suspension'][0].filename}` : "",
+          otros: req.files['otros'] ? `/uploads/${req.files['otros'][0].filename}` : "",
+      });
 
-    await newCV.save();
-    res.status(201).json(newCV);
+      await newCV.save();
+      res.status(201).json(newCV);
   } catch (error) {
-    console.error("❌ Error al guardar el CV:", error);
-    res.status(400).json({ message: "Error al guardar el CV", error });
+      console.error("❌ Error al guardar el CV:", error);
+      res.status(400).json({ message: "Error al guardar el CV", error });
   }
 });
 
