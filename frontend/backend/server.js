@@ -4,6 +4,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const multer = require("multer");
 const path = require("path");
+const fs = require('fs');
 
 dotenv.config();
 const app = express();
@@ -36,7 +37,7 @@ const cvSchema = new mongoose.Schema({
   tiempoEmpresa: { type: String, required: true },
   nivelAcademico: { type: String, required: true },
   fechaLlamadoAtencion: { type: String },
-  vaccidentalidad: { type: String },
+  accidentalidad: { type: String },
   fechaAccidente: { type: String },
   ARL: { type: String },
   EPS: { type: String },
@@ -49,7 +50,7 @@ const cvSchema = new mongoose.Schema({
   hojaDeVida: { type: String },
   ausentismo: { type: String },
   suspension: { type: String },
-  otros: { type: String }, // Campo para la foto
+  otros: { type: String }, 
 });
 
 const CV = mongoose.model("CV", cvSchema);
@@ -61,7 +62,8 @@ const storage = multer.diskStorage({
     cb(null, Date.now() + path.extname(file.originalname)); // Guardar con un nombre único
   },
 });
-const upload = multer({ storage });
+
+const upload = multer({ storage: storage });
 
 // Servir archivos estáticos desde la carpeta 'uploads'
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -151,23 +153,62 @@ app.get("/cvs/nombre/:nombre", async (req, res) => {
   }
 });
 
-app.put("/cvs/:id", upload.single("foto"), async (req, res) => {
+app.put("/cvs/:id", upload.fields([
+  { name: 'foto', maxCount: 1 },
+  { name: 'accidentalidad', maxCount: 1 },
+  { name: 'hojaDeVida', maxCount: 1 },
+  { name: 'ausentismo', maxCount: 1 },
+  { name: 'suspension', maxCount: 1 },
+  { name: 'otros', maxCount: 1 },
+]), async (req, res) => {
   try {
-    const { id } = req.params;
-    const updateData = req.body;
+      const { id } = req.params;
+      const updateData = req.body; // Get text fields
 
-    // Si se sube una nueva foto, la añadimos a los datos a actualizar
-    if (req.file) {
-      updateData.foto = `/uploads/${req.file.filename}`;
-    }
+      // 1. Fetch the existing CV *FIRST*
+      const cv = await CV.findById(id);  // This is the CRUCIAL missing line
 
-    const updatedCV = await CV.findByIdAndUpdate(id, updateData, { new: true });
-    res.json(updatedCV);
+      if (!cv) { // Handle the case where the CV is not found
+          return res.status(404).json({ error: "CV not found" });
+      }
+
+      if (req.files) {
+          // 2. Now you can safely delete old files:
+          const deleteOldFile = (fieldName) => {
+              if (req.files[fieldName] && cv[fieldName]) { // Now cv is defined!
+                  const oldFilePath = path.join(__dirname, cv[fieldName]);
+                  try {
+                      fs.unlinkSync(oldFilePath);
+                  } catch (err) {
+                      console.error(`Error deleting old ${fieldName}:`, err);
+                  }
+              }
+          };
+
+          deleteOldFile('foto');
+          deleteOldFile('accidentalidad');
+          deleteOldFile('hojaDeVida');
+          deleteOldFile('ausentismo');
+          deleteOldFile('suspension');
+          deleteOldFile('otros');
+
+          // 3. Update file paths in updateData:
+          updateData.foto = req.files['foto'] ? `/uploads/${req.files['foto'][0].filename}` : cv.foto;
+          updateData.accidentalidad = req.files['accidentalidad'] ? `/uploads/${req.files['accidentalidad'][0].filename}` : cv.accidentalidad;
+          updateData.hojaDeVida = req.files['hojaDeVida'] ? `/uploads/${req.files['hojaDeVida'][0].filename}` : cv.hojaDeVida;
+          updateData.ausentismo = req.files['ausentismo'] ? `/uploads/${req.files['ausentismo'][0].filename}` : cv.ausentismo;
+          updateData.suspension = req.files['suspension'] ? `/uploads/${req.files['suspension'][0].filename}` : cv.suspension;
+          updateData.otros = req.files['otros'] ? `/uploads/${req.files['otros'][0].filename}` : cv.otros;
+      }
+
+      const updatedCV = await CV.findByIdAndUpdate(id, updateData, { new: true });
+      res.json(updatedCV);
+
   } catch (error) {
-    res.status(500).json({ error: "Error actualizando el CV" });
+      console.error("Error updating CV:", error);
+      res.status(500).json({ error: "Error actualizando el CV" });
   }
 });
-
 
 // Eliminar un CV
 app.delete("/cvs/:id", async (req, res) => {

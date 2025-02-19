@@ -29,7 +29,7 @@ export default function Home() {
     tiempoEmpresa: "",
     nivelAcademico: "",
     fechaLlamadoAtencion: "",
-    Vaccidentalidad: "",
+    accidentalidad: "",
     fechaAccidente: "",
     ARL: "",
     EPS: "",
@@ -84,8 +84,9 @@ export default function Home() {
   };
 
   const handleFileChange = (e, setFile) => {
-    setFile(e.target.files[0]);
-  };
+    setFile(e.target.files[0]); // This is the CORRECT way to update the state
+    console.log("File selected:", e.target.files[0]); // Add this for debugging
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -155,10 +156,18 @@ export default function Home() {
   
   
 
-  const handleEdit = (cv) => {
-    setFormData(cv);
-    setEditingId(cv._id);
-  };
+const handleEdit = (cv) => {
+  setFormData(cv);
+  setEditingId(cv._id);
+
+  // Simulate file objects for all files:
+  setSelectedFoto(cv.foto ? { name: cv.foto.split('/').pop() } : null);
+  setSelectedAccidentalidad(cv.accidentalidad ? { name: cv.accidentalidad.split('/').pop() } : null);
+  setSelectedHojaDeVida(cv.hojaDeVida ? { name: cv.hojaDeVida.split('/').pop() } : null);
+  setSelectedAusentismo(cv.ausentismo ? { name: cv.ausentismo.split('/').pop() } : null);
+  setSelectedSuspension(cv.suspension ? { name: cv.suspension.split('/').pop() } : null);
+  setSelectedOtros(cv.otros ? { name: cv.otros.split('/').pop() } : null);
+};
 
   const handleDelete = async (id) => {
     try {
@@ -211,20 +220,12 @@ export default function Home() {
         <div>
                     <label>Subir Foto</label>
                     <input type="file" name="foto" onChange={(e) => handleFileChange(e, setSelectedFoto)} />
-                    {selectedFoto && (
-                        <div>
-                            <img src={URL.createObjectURL(selectedFoto)} alt="Foto Preview" style={{ maxWidth: '200px' }} />
-                        </div>
-                    )}
+                    
                 </div>
                 <div>
                     <label>VAccidentalidad</label>
                     <input type="file" name="Vaccidentalidad" onChange={(e) => handleFileChange(e, setSelectedAccidentalidad)} />
-                    {selectedAccidentalidad && (
-                        <div>
-                            <p>File selected</p> {/* Or a more informative preview */}
-                        </div>
-                    )}
+                    
                 </div>
                 <div>
                     <label>Hoja de vida</label>
@@ -282,109 +283,28 @@ export default function Home() {
                 )
             )}
             
-            {/* Botón para descargar la foto */}
-            {cv.foto && (
-              <a
-                href={`http://localhost:5000${cv.foto}`}
-                download
-                style={{
-                  display: "inline-block",
-                  marginTop: "10px",
-                  padding: "5px 10px",
-                  backgroundColor: "green",
-                  color: "white",
-                  textDecoration: "none",
-                  borderRadius: "5px",
-                }}
-              >
-                Ver Foto 
-              </a>
-            )}
-            {cv.accidentalidad && (
-              <a
-                href={`http://localhost:5000${cv.accidentalidad}`}
-                download
-                style={{
-                  display: "inline-block",
-                  marginTop: "10px",
-                  padding: "5px 10px",
-                  backgroundColor: "green",
-                  color: "white",
-                  textDecoration: "none",
-                  borderRadius: "5px",
-                }}
-              >
-                Ver accidentalidad
-              </a>
-            )}
-            {cv.hojaDeVida && (
-              <a
-                href={`http://localhost:5000${cv.hojaDeVida}`}
-                download
-                style={{
-                  display: "inline-block",
-                  marginTop: "10px",
-                  padding: "5px 10px",
-                  backgroundColor: "green",
-                  color: "white",
-                  textDecoration: "none",
-                  borderRadius: "5px",
-                }}
-              >
-                Ver hojaDeVida
-              </a>
-            )}
-            {cv.ausentismo && (
-              <a
-                href={`http://localhost:5000${cv.ausentismo}`}
-                download
-                style={{
-                  display: "inline-block",
-                  marginTop: "10px",
-                  padding: "5px 10px",
-                  backgroundColor: "green",
-                  color: "white",
-                  textDecoration: "none",
-                  borderRadius: "5px",
-                }}
-              >
-                Ver Ausentismo
-              </a>
-            )}
-             {cv.suspension && (
-              <a
-                href={`http://localhost:5000${cv.otros}`}
-                download
-                style={{
-                  display: "inline-block",
-                  marginTop: "10px",
-                  padding: "5px 10px",
-                  backgroundColor: "green",
-                  color: "white",
-                  textDecoration: "none",
-                  borderRadius: "5px",
-                }}
-              >
-                Suspension
-              </a>
-            )}
-                        {cv.otros && (
-              <a
-                href={`http://localhost:5000${cv.otros}`}
-                download
-                style={{
-                  display: "inline-block",
-                  marginTop: "10px",
-                  padding: "5px 10px",
-                  backgroundColor: "green",
-                  color: "white",
-                  textDecoration: "none",
-                  borderRadius: "5px",
-                }}
-              >
-                Otros
-              </a>
-            )}
+            {/* Corrected href for Suspension and previews for all files: */}
+{cv.foto && (
+    <a href={`http://localhost:5000/uploads/${cv.foto.split('/').pop()}`} download>Ver Foto</a>
+)}
+{cv.accidentalidad && (
+    <a href={`http://localhost:5000/uploads/${cv.accidentalidad.split('/').pop()}`} download>Ver Accidentalidad</a>
+)}
+{cv.hojaDeVida && (
+    <a href={`http://localhost:5000/uploads/${cv.hojaDeVida.split('/').pop()}`} download>Ver Hoja de Vida</a>
+)}
+{cv.ausentismo && (
+    <a href={`http://localhost:5000/uploads/${cv.ausentismo.split('/').pop()}`} download>Ver Ausentismo</a>
+)}
+{cv.suspension && (
+    <a href={`http://localhost:5000/uploads/${cv.suspension.split('/').pop()}`} download>Ver Suspension</a>
+)}
+{cv.otros && (
+    <a href={`http://localhost:5000/uploads/${cv.otros.split('/').pop()}`} download>Ver Otros</a>
+)}
+            
+            
+
 
             <button onClick={() => handleEdit(cv)}>Editar</button>
             <button onClick={() => handleDelete(cv._id)} style={{ marginLeft: "10px", backgroundColor: "red", color: "white" }}>
