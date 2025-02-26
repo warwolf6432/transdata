@@ -5,6 +5,9 @@ const dotenv = require("dotenv");
 const multer = require("multer");
 const path = require("path");
 const fs = require('fs');
+const bcrypt = require('bcrypt'); // Para encriptar contraseñas
+const jwt = require('jsonwebtoken');
+
 
 dotenv.config();
 const app = express();
@@ -55,6 +58,14 @@ const cvSchema = new mongoose.Schema({
 
 const CV = mongoose.model("CV", cvSchema);
 
+// Definir el esquema de usuario
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+});
+
+const User = mongoose.model("User", userSchema);
+
 // Configurar multer para la subida de imágenes
 const storage = multer.diskStorage({
   destination: "./uploads/",
@@ -64,6 +75,53 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
+
+// Rutas para autenticación
+app.post('/api/auth/register', async (req, res) => {
+  try {
+      const { username, password } = req.body;
+
+      const existingUser = await User.findOne({ username });
+      if (existingUser) {
+          return res.status(400).json({ message: 'El usuario ya existe' });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const newUser = new User({ username, password: hashedPassword });
+      await newUser.save();
+
+      res.status(201).json({ message: 'Usuario registrado con éxito' });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error al registrar usuario' });
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+      const { username, password } = req.body;
+
+      const user = await User.findOne({ username });
+      if (!user) {
+          return res.status(401).json({ message: 'Credenciales inválidas' });
+      }
+
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+          return res.status(401).json({ message: 'Credenciales inválidas' });
+      }
+
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+
+      res.json({ token });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error al iniciar sesión' });
+  }
+});
+
+
+
 
 // Servir archivos estáticos desde la carpeta 'uploads'
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -220,6 +278,8 @@ app.delete("/cvs/:id", async (req, res) => {
     res.status(500).json({ message: "Error al eliminar el CV" });
   }
 });
+
+
 
 // Ruta raíz para verificar si el servidor está corriendo
 app.get("/", (req, res) => {

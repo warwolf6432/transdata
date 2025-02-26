@@ -1,38 +1,45 @@
-/* Variables CSS (Custom Properties) */
+/* Variables CSS (Custom Properties) - Ampliadas */
 :root {
     --color-primario: #3498db; /* Azul */
     --color-secundario: #2ecc71; /* Verde */
-    --color-fondo: #f5f5f5; /* Gris claro */
+    --color-fondo: #e3f2fd; /* Azul claro de fondo general */
+    --color-fondo-contraste: #f5f5f5; /* Gris claro para contrastar */
     --color-texto: #333; /* Gris oscuro */
+    --color-borde: #ddd; /* Gris claro para bordes */
     --espaciado-mediano: 16px;
     --borde-radio: 8px;
+    --sombra-ligera: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --color-primario-rgb: 52, 152, 219; /* Valores RGB de --color-primario */
 }
 
 /* Estilos generales */
 body {
-    font-family: sans-serif; /* Fuente de letra para todo el cuerpo */
-    margin: 0; /* Elimina márgenes predeterminados del cuerpo */
+    font-family: 'Arial', sans-serif; /* Fuente más moderna */
+    margin: 0;
+    line-height: 1.6; /* Mejora la legibilidad */
+    color: var(--color-texto);
+    background-color: var(--color-fondo); /* Fondo azul claro */
 }
 
 /* Contenedor principal */
 #root {
-    max-width: 1280px;
+    max-width: 1200px; /* Ajustado a un ancho más común */
     margin: 0 auto;
     padding: 2rem;
-    text-align: left;
-    background-color: var(--color-fondo);
 }
 
 .container {
-    max-width: 960px; /* Ancho máximo del contenedor principal */
-    margin: 0 auto;
+    padding: 2rem; /* Padding consistente */
+    background-color: var(--color-fondo-contraste); /* Fondo gris claro */
+    border-radius: var(--borde-radio);
+    box-shadow: var(--sombra-ligera);
 }
 
 /* Encabezado */
 h1 {
-    font-size: 2.5rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
+    font-size: 2.8rem; /* Tamaño un poco mayor */
+    font-weight: 600; /* Ligeramente menos bold */
+    margin-bottom: 1.5rem;
     text-align: center;
     color: var(--color-texto);
 }
@@ -41,87 +48,156 @@ h1 {
 .search-container {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 1rem;
     margin-bottom: 2rem;
 }
 
 select,
 input[type="text"] {
-    padding: 8px;
-    border: 1px solid #ccc;
+    padding: 0.8rem;
+    border: 1px solid var(--color-borde);
     border-radius: var(--borde-radio);
+    transition: border-color 0.3s; /* Transición para el borde */
+}
+
+select:focus,
+input[type="text"]:focus {
+    border-color: var(--color-primario);
+    outline: none; /* Elimina el outline por defecto al hacer focus */
+    box-shadow: 0 0 5px rgba(var(--color-primario-rgb), 0.2); /* Sombra suave al hacer focus */
 }
 
 button {
     background-color: var(--color-primario);
     color: white;
-    padding: 8px 15px;
+    padding: 0.8rem 1.8rem; /* Padding más espaciado */
     border: none;
     border-radius: var(--borde-radio);
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, transform 0.2s; /* Transición para el hover y el click */
 }
 
 button:hover {
     background-color: #2980b9;
+    transform: translateY(-2px); /* Ligero movimiento hacia arriba al hacer hover */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada al hacer hover */
+}
+
+button:active {
+    transform: translateY(0); /* Restablece la posición al hacer click */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Sombra más sutil al hacer click */
+}
+
+button:disabled {
+    background-color: #ccc; /* Gris claro para botones deshabilitados */
+    cursor: default; /* Cursor por defecto */
 }
 
 /* Formulario */
 form {
-    background-color: white;
-    padding: 20px;
+    background-color: var(--color-fondo-contraste); /* Fondo gris claro */
+    padding: 2rem;
     border-radius: var(--borde-radio);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--sombra-ligera);
 }
 
 label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 0.5rem;
     color: var(--color-texto);
+    font-weight: 500; /* Ligeramente más grueso */
 }
 
 input[type="text"],
 input[type="file"],
 select {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
+    padding: 0.8rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--color-borde);
     border-radius: var(--borde-radio);
     box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="file"]:focus,
+select:focus {
+    border-color: var(--color-primario);
+    outline: none;
+    box-shadow: 0 0 5px rgba(var(--color-primario-rgb), 0.2);
 }
 
 /* Listado de hojas de vida */
 .cv-list {
     margin-top: 2rem;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Diseño de tarjetas responsivo */
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* Ajustado el minmax */
+    gap: 1.5rem;
 }
 
 .cv-item {
-    border: 1px solid #ddd;
-    padding: 20px;
-    margin-bottom: 10px;
+    border: 1px solid var(--color-borde);
+    padding: 1.5rem;
     border-radius: var(--borde-radio);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    background-color: white;
+    box-shadow: var(--sombra-ligera);
+    background-color: var(--color-fondo-contraste); /* Fondo gris claro */
+    transition: transform 0.2s; /* Transición para el hover */
+}
+
+.cv-item:hover {
+    transform: translateY(-5px); /* Ligero movimiento hacia arriba al hacer hover */
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15); /* Sombra más pronunciada al hacer hover */
 }
 
 .cv-item p {
-    margin-bottom: 5px;
+    margin-bottom: 0.5rem;
     color: var(--color-texto);
+}
+
+.cv-item strong { /* Estilo para las etiquetas */
+    font-weight: 600;
+    color: #1f2937; /* Azul más oscuro para las etiquetas */
 }
 
 .cv-item a {
     color: var(--color-primario);
     text-decoration: none;
+    display: inline-block; /* Para que los enlaces se comporten como bloques */
+    margin-right: 0.5rem; /* Espacio entre los enlaces */
+    transition: color 0.3s, background-color 0.3s;
 }
 
 .cv-item a:hover {
     text-decoration: underline;
+    color: #2980b9;
 }
 
 .cv-item button {
-    margin-top: 10px;
+    margin-top: 1rem;
+    padding: 0.6rem 1.4rem; /* Ajustado el padding */
+    transition: transform 0.2s, box-shadow 0.2s; /* Transiciones para los botones */
 }
+
+.cv-item button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.cv-item button:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.enlace-descarga {
+    display: inline-block;
+    background-color: #3498db;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    margin-right: 8px;
+    margin-top: 4px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+

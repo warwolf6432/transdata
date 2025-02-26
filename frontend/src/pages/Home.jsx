@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { FaDownload } from 'react-icons/fa';
 import "../styles.css"
 
 
@@ -180,14 +181,14 @@ const handleEdit = (cv) => {
   };
 
   return (
-    <div className="p-8 bg-gray-100 min-h-screen">
-        <div className="container mx-auto">
-            <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Gestión de Hojas de Vida</h1>
+    <div className="p-8 bg-blue-100 min-h-screen">
+        <div className="container mx-auto bg-white rounded-lg shadow-md p-8">
+            <h1 className="text-3xl font-bold mb-6 text-center text-blue-800">Gestión de Hojas de Vida</h1>
 
             {/* Search */}
             <div className="mb-8 flex items-center gap-3">
                 <select
-                    className="border p-2 rounded-md focus:ring-2 focus:ring-blue-500"
+                    className="border p-2 rounded-md focus:ring-2 focus:ring-red-300"
                     value={searchType}
                     onChange={(e) => setSearchType(e.target.value)}
                 >
@@ -196,27 +197,27 @@ const handleEdit = (cv) => {
                 </select>
                 <input
                     type="text"
-                    className="border p-2 rounded-md w-64 focus:ring-2 focus:ring-blue-500"
+                    className="border p-2 rounded-md w-64 focus:ring-2 focus:ring-blue-300"
                     placeholder={`Ingrese ${searchType === "documento" ? "el documento" : "el nombre"}`}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <button className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md focus:ring-2 focus:ring-green-300" onClick={handleSearch}>
+                <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:ring-2 focus:ring-blue-300" onClick={handleSearch}>
                     Buscar
                 </button>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md ml-2 focus:ring-2 focus:ring-blue-300" onClick={handleShowAll}>
+                <button className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-md ml-2 focus:ring-2 focus:ring-gray-300" onClick={handleShowAll}>
                     Mostrar Todas
                 </button>
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md">
+            <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md border border-blue-200">
                 {Object.keys(formData).map((key) => (
                     <div key={key} className="mb-4">
                         <label className="block text-gray-700 font-bold mb-2">{key.replace(/([A-Z])/g, " $1").toUpperCase()}</label>
                         <input
                             type="text"
-                            className="border p-2 rounded-md w-full focus:ring-2 focus:ring-blue-500"
+                            className="border p-2 rounded-md w-full focus:ring-2 focus:ring-blue-300"
                             name={key}
                             value={formData[key]}
                             onChange={handleChange}
@@ -239,51 +240,56 @@ const handleEdit = (cv) => {
                     </div>
                 ))}
 
-                <button type="submit" className="bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded-md w-full focus:ring-2 focus:ring-purple-300">
+                <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md w-full focus:ring-2 focus:ring-blue-300">
                     {editingId ? "Actualizar" : "Agregar"}
                 </button>
             </form>
 
             {/* CV List */}
-            <h2 className="text-2xl font-bold mt-8 mb-4 text-gray-800">Hojas de Vida Registradas</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4 text-blue-800">Hojas de Vida Registradas</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {cvs.length === 0 ? (
                     <p className="text-gray-500">No se encontraron resultados.</p>
                 ) : (
                     cvs.map((cv, index) => (
-                        <div key={index} className="border p-6 rounded-lg shadow-md bg-white">
-                            {Object.keys(cv).map(
-                                (key) =>
-                                    key !== "_id" &&
-                                    key !== "__v" && (
-                                        <p key={key} className="mb-2 text-gray-700">
-                                            <strong className="text-gray-800">{key.replace(/([A-Z])/g, " $1").toUpperCase()}:</strong> {cv[key]}
-                                        </p>
-                                    )
-                            )}
+                        <div key={index} className="border p-6 rounded-lg shadow-md bg-white border-blue-200 relative"> 
+                            <div className="mb-4"> 
+                                {Object.keys(cv).map(
+                                    (key) =>
+                                        key !== "_id" &&
+                                        key !== "__v" && (
+                                            <p key={key} className="mb-2 text-gray-700">
+                                                <strong className="text-blue-800">{key.replace(/([A-Z])/g, " $1").toUpperCase()}:</strong> {cv[key]}
+                                            </p>
+                                        )
+                                )}
 
-                            {/* File Links */}
-                            {[
-                                { key: "foto", label: "Ver Foto" },
-                                { key: "accidentalidad", label: "Ver Accidentalidad" },
-                                { key: "hojaDeVida", label: "Ver Hoja de Vida" },
-                                { key: "ausentismo", label: "Ver Ausentismo" },
-                                { key: "suspension", label: "Ver Suspensión" },
-                                { key: "otros", label: "Ver Otros" },
-                            ].map((file, i) =>
-                                cv[file.key] ? (
-                                    <a
-                                        key={i}
-                                        href={`http://localhost:5000/uploads/${cv[file.key].split('/').pop()}`}
-                                        download
-                                        className="block text-blue-600 hover:text-blue-800 underline mt-1"
-                                    >
-                                        {file.label}
-                                    </a>
-                                ) : null
-                            )}
+                               
+                                <div className="mt-2">
+                                    {[
+                                        { key: "foto", label: "Ver Foto" },
+                                        { key: "accidentalidad", label: "Ver Accidentalidad" },
+                                        { key: "hojaDeVida", label: "Ver Hoja de Vida" },
+                                        { key: "ausentismo", label: "Ver Ausentismo" },
+                                        { key: "suspension", label: "Ver Suspensión" },
+                                        { key: "otros", label: "Ver Otros" },
+                                    ].map((file, i) =>
+                                        cv[file.key] ? (
+                                            <a
+                key={i}
+                href={`http://localhost:5000/uploads/${cv[file.key].split('/').pop()}`}
+                download
+                className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md mr-5 mt-7 transition duration-300 ease-in-out" // Estilo de botón con icono
+            >
+                <FaDownload className="mr-2" /> {/* Icono de descarga */}
+                {file.label}
+            </a>
+                                        ) : null
+                                    )}
+                                </div>
+                            </div>
 
-                            <div className="mt-4 flex justify-center">
+                            <div className="absolute bottom-4 right-4 flex"> 
                                 <button className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-md mr-2 focus:ring-2 focus:ring-yellow-300" onClick={() => handleEdit(cv)}>
                                     Editar
                                 </button>
