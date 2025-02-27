@@ -3,6 +3,98 @@ import axios from "axios";
 import { FaDownload } from 'react-icons/fa';
 import "../styles.css"
 
+// Componente para el pop-up
+const InfoPopup = ({ cv, onClose }) => {
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+            <div className="bg-white p-6 rounded-lg shadow-md w-96 max-w-md mx-auto"> {/* Ajustes de estilo para centrar */}
+                <h2 className="text-2xl font-bold mb-4">Información del CV</h2>
+                {Object.keys(cv).map(
+                    (key) =>
+                        key !== "_id" &&
+                        key !== "__v" &&
+                        key !== "foto" &&
+                        key !== "accidentalidad" &&
+                        key !== "hojaDeVida" &&
+                        key !== "ausentismo" &&
+                        key !== "suspension" &&
+                        key !== "otros" && (
+                            <p key={key} className="mb-2">
+                                <strong>{key.replace(/([A-Z])/g, " $1").toUpperCase()}:</strong> {cv[key]}
+                            </p>
+                        )
+                )}
+
+                <div className="mt-4">
+                    {cv.foto && (
+                        <a
+                            href={`http://localhost:5000/uploads/${cv.foto.split('/').pop()}`}
+                            download
+                            className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md mr-2 mb-2"
+                        >
+                            <FaDownload className="mr-2" />
+                            Ver Foto
+                        </a>
+                    )}
+                    {cv.accidentalidad && (
+                        <a
+                            href={`http://localhost:5000/uploads/${cv.accidentalidad.split('/').pop()}`}
+                            download
+                            className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md mr-2 mb-2"
+                        >
+                            <FaDownload className="mr-2" />
+                            Ver Accidentalidad
+                        </a>
+                    )}
+                    {cv.hojaDeVida && (
+                        <a
+                            href={`http://localhost:5000/uploads/${cv.hojaDeVida.split('/').pop()}`}
+                            download
+                            className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md mr-2 mb-2"
+                        >
+                            <FaDownload className="mr-2" />
+                            Ver Hoja de Vida
+                        </a>
+                    )}
+                    {cv.ausentismo && (
+                        <a
+                            href={`http://localhost:5000/uploads/${cv.ausentismo.split('/').pop()}`}
+                            download
+                            className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md mr-2 mb-2"
+                        >
+                            <FaDownload className="mr-2" />
+                            Ver Ausentismo
+                        </a>
+                    )}
+                    {cv.suspension && (
+                        <a
+                            href={`http://localhost:5000/uploads/${cv.suspension.split('/').pop()}`}
+                            download
+                            className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md mr-2 mb-2"
+                        >
+                            <FaDownload className="mr-2" />
+                            Ver Suspensión
+                        </a>
+                    )}
+                    {cv.otros && (
+                        <a
+                            href={`http://localhost:5000/uploads/${cv.otros.split('/').pop()}`}
+                            download
+                            className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md mr-2 mb-2"
+                        >
+                            <FaDownload className="mr-2" />
+                            Ver Otros
+                        </a>
+                    )}
+                </div>
+
+                <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md mt-4" onClick={onClose}>
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    );
+};
 
 
 export default function Home() {
@@ -15,6 +107,8 @@ export default function Home() {
   const [selectedAusentismo, setSelectedAusentismo] = useState(null);
   const [selectedSuspension, setSelectedSuspension] = useState(null);
   const [selectedOtros, setSelectedOtros] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
+  const [selectedCv, setSelectedCv] = useState(null);
   const [formData, setFormData] = useState({
     documentoIdentidad: "",
     nombreEmpleado: "",
@@ -55,6 +149,16 @@ export default function Home() {
     }
   };
 
+  const handleInfoClick = (cv) => {
+    setSelectedCv(cv);
+    setShowPopup(true);
+};
+
+const closePopup = () => {
+    setShowPopup(false);
+    setSelectedCv(null);
+};
+
   const handleSearch = async () => {
     if (!searchQuery) {
       alert("Ingrese un término de búsqueda");
@@ -85,9 +189,22 @@ export default function Home() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-const handleFileChange = (e, setFile) => {
-    setFile(e.target.files[0]); // This is the CORRECT way to update the state
-    console.log("File selected:", e.target.files[0]); // Add this for debugging
+  const handleFileChange = (e, setFile, setPreview) => {
+    const file = e.target.files[0];
+    setFile(file);
+    if (file) {
+        if (setPreview) {
+            setPreview(URL.createObjectURL(file));
+        } else {
+            setFotoPreview(URL.createObjectURL(file));
+        }
+    } else {
+        if (setPreview) {
+            setPreview(null);
+        } else {
+            setFotoPreview(null);
+        }
+    }
 };
 
   const handleSubmit = async (e) => {
@@ -149,6 +266,8 @@ const handleFileChange = (e, setFile) => {
         setSelectedAusentismo(null);
         setSelectedSuspension(null)
         setSelectedOtros(null);
+        setFotoPreview(null);
+
 
     } catch (error) {
         console.error("❌ Error al agregar/actualizar CV:", error.response?.data || error);
@@ -169,6 +288,7 @@ const handleEdit = (cv) => {
   setSelectedAusentismo(cv.ausentismo ? { name: cv.ausentismo.split('/').pop() } : null);
   setSelectedSuspension(cv.suspension ? { name: cv.suspension.split('/').pop() } : null);
   setSelectedOtros(cv.otros ? { name: cv.otros.split('/').pop() } : null);
+  setFotoPreview(cv.foto ? `http://localhost:5000/uploads/${cv.foto.split('/').pop()}` : null);
 };
 
   const handleDelete = async (id) => {
@@ -226,8 +346,12 @@ const handleEdit = (cv) => {
                     </div>
                 ))}
 
+                <div className="mb-4">
+                    <label className="block text-gray-700 font-bold mb-2">Subir Foto</label>
+                    <input type="file" name="foto" onChange={(e) => setSelectedFoto(e.target.files[0])} />
+                </div>
+
                 {[
-                    { name: "foto", label: "Subir Foto" },
                     { name: "accidentalidad", label: "Accidentalidad" },
                     { name: "hojaDeVida", label: "Hoja de Vida" },
                     { name: "ausentismo", label: "Ausentismo" },
@@ -236,7 +360,7 @@ const handleEdit = (cv) => {
                 ].map((file, index) => (
                     <div key={index} className="mb-4">
                         <label className="block text-gray-700 font-bold mb-2">{file.label}</label>
-                        <input type="file" name={file.name} onChange={(e) => handleFileChange(e, eval(`setSelected${file.name.charAt(0).toUpperCase() + file.name.slice(1)}`))} />
+                        <input type="file" name={file.name} onChange={(e) => eval(`setSelected${file.name.charAt(0).toUpperCase() + file.name.slice(1)}`)} />
                     </div>
                 ))}
 
@@ -252,8 +376,8 @@ const handleEdit = (cv) => {
                     <p className="text-gray-500">No se encontraron resultados.</p>
                 ) : (
                     cvs.map((cv, index) => (
-                        <div key={index} className="border p-6 rounded-lg shadow-md bg-white border-blue-200 relative"> 
-                            <div className="mb-4"> 
+                        <div key={index} className="border p-6 rounded-lg shadow-md bg-white border-blue-200 relative">
+                            <div className="mb-4">
                                 {Object.keys(cv).map(
                                     (key) =>
                                         key !== "_id" &&
@@ -264,8 +388,17 @@ const handleEdit = (cv) => {
                                         )
                                 )}
 
-                               
                                 <div className="mt-2">
+                                    {cv.foto && (
+                                        <div className="border border-gray-300 rounded-md p-2 mb-2">
+                                            <img
+                                                src={`http://localhost:5000/uploads/${cv.foto.split('/').pop()}`}
+                                                alt="Foto"
+                                                style={{ maxWidth: "200px", maxHeight: "200px", objectFit: "cover" }}
+                                            />
+                                        </div>
+                                    )}
+
                                     {[
                                         { key: "foto", label: "Ver Foto" },
                                         { key: "accidentalidad", label: "Ver Accidentalidad" },
@@ -276,20 +409,23 @@ const handleEdit = (cv) => {
                                     ].map((file, i) =>
                                         cv[file.key] ? (
                                             <a
-                key={i}
-                href={`http://localhost:5000/uploads/${cv[file.key].split('/').pop()}`}
-                download
-                className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md mr-5 mt-7 transition duration-300 ease-in-out" // Estilo de botón con icono
-            >
-                <FaDownload className="mr-2" /> {/* Icono de descarga */}
-                {file.label}
-            </a>
+                                                key={i}
+                                                href={`http://localhost:5000/uploads/${cv[file.key].split('/').pop()}`}
+                                                download
+                                                className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md mr-5 mt-7 transition duration-300 ease-in-out"
+                                            >
+                                                <FaDownload className="mr-2" />
+                                                {file.label}
+                                            </a>
                                         ) : null
                                     )}
                                 </div>
                             </div>
 
-                            <div className="absolute bottom-4 right-4 flex"> 
+                            <div className="absolute bottom-4 right-4 flex">
+                                <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md mr-2 focus:ring-2 focus:ring-blue-300" onClick={() => handleInfoClick(cv)}>
+                                    Información
+                                </button>
                                 <button className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-md mr-2 focus:ring-2 focus:ring-yellow-300" onClick={() => handleEdit(cv)}>
                                     Editar
                                 </button>
@@ -304,6 +440,9 @@ const handleEdit = (cv) => {
                     ))
                 )}
             </div>
+
+            {/* Mostrar el pop-up condicionalmente */}
+            {showPopup && <InfoPopup cv={selectedCv} onClose={closePopup} />}
         </div>
     </div>
 );
