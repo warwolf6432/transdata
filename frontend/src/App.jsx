@@ -17,7 +17,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={!isLoggedIn ? <Login /> : <Navigate to="/home" />} />
+      <Route path="/" element={<Login />} /> {/* Login siempre primero */}
         <Route path="/home" element={isLoggedIn ? <Home /> : <Navigate to="/" />} />
         <Route path="/register" element={<RUsuarios />} />
         <Route path="*" element={<Navigate to="/" />} />

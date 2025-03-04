@@ -107,7 +107,7 @@ export default function Home() {
   const [selectedAusentismo, setSelectedAusentismo] = useState(null);
   const [selectedSuspension, setSelectedSuspension] = useState(null);
   const [selectedOtros, setSelectedOtros] = useState(null);
-  const [showPopup, setShowPopup] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [selectedCv, setSelectedCv] = useState(null);
   const [formData, setFormData] = useState({
     documentoIdentidad: "",
@@ -151,11 +151,11 @@ export default function Home() {
 
   const handleInfoClick = (cv) => {
     setSelectedCv(cv);
-    setShowPopup(true);
+    setShowModal(true);
 };
 
-const closePopup = () => {
-    setShowPopup(false);
+const closeModal = () => {
+    setShowModal(false);
     setSelectedCv(null);
 };
 
@@ -377,49 +377,50 @@ const handleEdit = (cv) => {
                 ) : (
                     cvs.map((cv, index) => (
                         <div key={index} className="border p-6 rounded-lg shadow-md bg-white border-blue-200 relative">
-                            <div className="mb-4">
-                                {Object.keys(cv).map(
-                                    (key) =>
-                                        key !== "_id" &&
-                                        key !== "__v" && (
-                                            <p key={key} className="mb-2 text-gray-700">
-                                                <strong className="text-blue-800">{key.replace(/([A-Z])/g, " $1").toUpperCase()}:</strong> {cv[key]}
-                                            </p>
-                                        )
+                            <div className="grid grid-cols-2 gap-4">
+                                {Object.entries(cv).map(([key, value], i) => {
+                                    if (key === "_id" || key === "__v" || key === "foto" || key === "accidentalidad" || key === "hojaDeVida" || key === "ausentismo" || key === "suspension" || key === "otros") {
+                                        return null;
+                                    }
+                                    return (
+                                        <p key={i} className="mb-2 text-gray-700">
+                                            <strong className="text-blue-800">{key.replace(/([A-Z])/g, " $1").toUpperCase()}:</strong> {value}
+                                        </p>
+                                    );
+                                })}
+                            </div>
+
+                            <div className="mt-2">
+                                {cv.foto && (
+                                    <div className="border border-gray-300 rounded-md p-2 mb-2">
+                                        <img
+                                            src={`http://localhost:5000/uploads/${cv.foto.split('/').pop()}`}
+                                            alt="Foto"
+                                            style={{ maxWidth: "200px", maxHeight: "200px", objectFit: "cover" }}
+                                        />
+                                    </div>
                                 )}
 
-                                <div className="mt-2">
-                                    {cv.foto && (
-                                        <div className="border border-gray-300 rounded-md p-2 mb-2">
-                                            <img
-                                                src={`http://localhost:5000/uploads/${cv.foto.split('/').pop()}`}
-                                                alt="Foto"
-                                                style={{ maxWidth: "200px", maxHeight: "200px", objectFit: "cover" }}
-                                            />
-                                        </div>
-                                    )}
-
-                                    {[
-                                        { key: "foto", label: "Ver Foto" },
-                                        { key: "accidentalidad", label: "Ver Accidentalidad" },
-                                        { key: "hojaDeVida", label: "Ver Hoja de Vida" },
-                                        { key: "ausentismo", label: "Ver Ausentismo" },
-                                        { key: "suspension", label: "Ver Suspensión" },
-                                        { key: "otros", label: "Ver Otros" },
-                                    ].map((file, i) =>
-                                        cv[file.key] ? (
-                                            <a
-                                                key={i}
-                                                href={`http://localhost:5000/uploads/${cv[file.key].split('/').pop()}`}
-                                                download
-                                                className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md mr-5 mt-7 transition duration-300 ease-in-out"
-                                            >
-                                                <FaDownload className="mr-2" />
-                                                {file.label}
-                                            </a>
-                                        ) : null
-                                    )}
-                                </div>
+                                {[
+                                    { key: "foto", label: "Ver Foto" },
+                                    { key: "accidentalidad", label: "Ver Accidentalidad" },
+                                    { key: "hojaDeVida", label: "Ver Hoja de Vida" },
+                                    { key: "ausentismo", label: "Ver Ausentismo" },
+                                    { key: "suspension", label: "Ver Suspensión" },
+                                    { key: "otros", label: "Ver Otros" },
+                                ].map((file, i) =>
+                                    cv[file.key] ? (
+                                        <a
+                                            key={i}
+                                            href={`http://localhost:5000/uploads/${cv[file.key].split('/').pop()}`}
+                                            download
+                                            className="inline-flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md mr-5 mt-7 transition duration-300 ease-in-out"
+                                        >
+                                            <FaDownload className="mr-2" />
+                                            {file.label}
+                                        </a>
+                                    ) : null
+                                )}
                             </div>
 
                             <div className="absolute bottom-4 right-4 flex">
@@ -441,8 +442,8 @@ const handleEdit = (cv) => {
                 )}
             </div>
 
-            {/* Mostrar el pop-up condicionalmente */}
-            {showPopup && <InfoPopup cv={selectedCv} onClose={closePopup} />}
+            {/* Mostrar el modal condicionalmente */}
+            {showModal && <InfoPopup cv={selectedCv} onClose={closeModal} />}
         </div>
     </div>
 );
