@@ -36,7 +36,7 @@
                     <button>Eliminar</button>
                 </td>
             </tr>
-            </tbody>
+        </tbody>
     </table>
 
     <h2>Agregar Nuevo Usuario</h2>
@@ -50,5 +50,13 @@
 
         <input type="submit" value="Agregar">
     </form>
+
+    <button id="irAHome">Ir a Home</button>
+
+    <script>
+        document.getElementById('irAHome').addEventListener('click', function() {
+            window.location.href = '/home'; // O la ruta completa: http://tu-dominio.com/home
+        });
+    </script>
 </body>
 </html>
