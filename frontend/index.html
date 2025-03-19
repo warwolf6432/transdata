@@ -1,62 +1,12 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Datos</title>
-</head>
-<body>
-    <h1>Gestión de Usuarios</h1>
-
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Correo Electrónico</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>1</td>
-                <td>Juan Pérez</td>
-                <td>juan.perez@example.com</td>
-                <td>
-                    <button>Editar</button>
-                    <button>Eliminar</button>
-                </td>
-            </tr>
-            <tr>
-                <td>2</td>
-                <td>María García</td>
-                <td>maria.garcia@example.com</td>
-                <td>
-                    <button>Editar</button>
-                    <button>Eliminar</button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
-    <h2>Agregar Nuevo Usuario</h2>
-
-    <form>
-        <label for="nombre">Nombre:</label><br>
-        <input type="text" id="nombre" name="nombre"><br><br>
-
-        <label for="email">Correo Electrónico:</label><br>
-        <input type="email" id="email" name="email"><br><br>
-
-        <input type="submit" value="Agregar">
-    </form>
-
-    <button id="irAHome">Ir a Home</button>
-
-    <script>
-        document.getElementById('irAHome').addEventListener('click', function() {
-            window.location.href = '/home'; // O la ruta completa: http://tu-dominio.com/home
-        });
-    </script>
-</body>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mi App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
