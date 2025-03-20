@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import Login from "./Login"; // Asegúrate de importar el archivo correcto
+import Login from "./pages/login"; // Si Login está en /src/pages/
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
